@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>LexGsu – Hukuk Ofisi</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f2ece8;color:#2e2d2c;height:100vh;overflow:hidden;display:flex}
+:root{--p:#2e5b66;--a:#ce733b;--d:#2e2d2c;--m:#8e9c9c;--l:#f8f3f9;--b:#ddd6cf;--bg:#f2ece8}
+#sidebar{width:230px;background:var(--d);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s}
+#sidebar.col{width:62px}
+.logo{padding:20px 18px 16px;border-bottom:1px solid #ffffff18}
+.logo-f{display:flex;align-items:center;gap:8px}
+.logo-t{color:var(--a);font-weight:900;font-size:20px}
+.logo-s{color:#ffffff55;font-size:11px;margin-top:3px;padding-left:30px}
+.logo-m{color:var(--a);font-weight:900;font-size:20px;text-align:center;display:none}
+#sidebar.col .logo-f{display:none}
+#sidebar.col .logo-m{display:block}
+#sidebar.col .logo-s{display:none}
+nav{flex:1;padding:10px 0}
+.nb{display:flex;align-items:center;gap:12px;width:100%;padding:11px 18px;background:transparent;color:#ffffffaa;border:none;cursor:pointer;font-size:13px;font-weight:400;border-left:3px solid transparent;transition:all .15s;text-align:left}
+.nb.act{background:rgba(46,91,102,.4);color:var(--a);font-weight:700;border-left-color:var(--a)}
+.nb:hover{background:rgba(255,255,255,.08);color:#fff}
+.ni{font-size:17px;flex-shrink:0}
+#sidebar.col .nl{display:none}
+#sidebar.col .nb{justify-content:center;padding:11px 0}
+.tgl{background:transparent;border:none;color:#ffffff40;padding:14px;cursor:pointer;font-size:15px;text-align:center;width:100%}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+header{background:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(46,91,102,.1);flex-shrink:0;border-bottom:2px solid var(--a)}
+.htitle{font-weight:700;font-size:15px;color:var(--p)}
+.hright{display:flex;gap:10px;align-items:center)}
+.cdot{width:8px;height:8px;border-radius:50%;background:var(--p)}
+.cdot.err{background:var(--a)}
+.ctxt{font-size:12px;color:var(--m)}
+.av{width:34px;height:34px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+main{flex:1;overflow-y:auto;padding:24px}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 12px rgba(46,91,102,.08)}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+.sc{border-radius:12px;padding:18px 20px;color:#fff}
+.si{font-size:26px}.sv{font-size:26px;font-weight:800;margin-top:6px}.sl{font-size:12px;opacity:.8;margin-top:3px}
+table{width:100%;border-collapse:collapse}
+th{background:var(--p);color:#fff;padding:11px 14px;text-align:left;font-size:12px;font-weight:700}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--b)}
+tr:nth-child(even) td{background:var(--l)}
+.tag{display:inline-block;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700;white-space:nowrap}
+.btn{border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:13px;font-weight:600}
+.btn:hover{opacity:.85}
+.bp{background:var(--p);color:#fff}
+.ba{background:var(--a);color:#fff}
+.bg{background:#8e9c9c;color:#fff}
+.bs{padding:5px 10px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:600}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.md{background:#fff;border-radius:16px;padding:28px;width:460px;max-width:98vw;max-height:92vh;overflow-y:auto;box-shadow:0 12px 50px rgba(0,0,0,.25)}
+.md.wide{width:740px}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.mt{font-weight:700;font-size:17px;color:var(--p)}
+.mc{background:none;border:none;font-size:24px;cursor:pointer;color:var(--m)}
+.fi{margin-bottom:14px}
+.fi label{display:block;font-size:11px;font-weight:700;color:var(--m);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.fi input,.fi select,.fi textarea{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid var(--b);font-size:14px;outline:none;background:#fff;font-family:inherit}
+.fi textarea{resize:vertical}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#toast{position:fixed;top:16px;right:16px;background:var(--p);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;display:none;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.tabs{display:flex;border-bottom:2px solid var(--b);margin-bottom:20px}
+.tb{background:none;border:none;padding:8px 16px;font-size:13px;cursor:pointer;color:var(--m);border-bottom:3px solid transparent;margin-bottom:-2px;font-weight:400}
+.tb.act{color:var(--p);font-weight:700;border-bottom-color:var(--a)}
+.mc-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(46,91,102,.08);overflow:hidden;border:1px solid var(--b)}
+.mc-top{padding:16px 18px;border-top:4px solid var(--a)}
+.mc-top.pas{border-top-color:var(--m)}
+.mc-foot{border-top:1px solid var(--b);padding:10px 12px;display:flex;gap:6px;flex-wrap:wrap;background:var(--l)}
+.ds{background:var(--l);border-radius:10px;padding:10px 14px;margin-top:8px;cursor:pointer;border:1.5px solid var(--b);transition:border-color .15s}
+.ds:hover{border-color:var(--p)}
+.spin{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:16px}
+.sp{width:48px;height:48px;border:4px solid var(--b);border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#pov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px}
+#pov.show{display:flex}
+#pb{background:#fff;border-radius:16px;width:820px;max-width:98vw;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 12px 50px rgba(0,0,0,.3)}
+#ph{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:2px solid var(--a);flex-shrink:0}
+#pc{flex:1;overflow-y:auto;padding:20px}
+#pc textarea{width:100%;height:420px;font-family:monospace;font-size:12px;border:1px solid var(--b);border-radius:8px;padding:12px;background:var(--l);resize:vertical}
+@media print{#sidebar,header,#pov .btn{display:none}#pc{padding:0}}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div id="pov">
+  <div id="pb">
+    <div id="ph">
+      <strong id="ptitle" style="color:var(--p);font-size:15px"></strong>
+      <div style="display:flex;gap:8px">
+        <button class="btn ba" onclick="window.print()">🖨️ Yazdır / PDF</button>
+        <button class="btn" style="background:#555;color:#fff" onclick="closePrev()">✕</button>
+      </div>
+    </div>
+    <div id="pc"></div>
+  </div>
+</div>
+<div id="sidebar">
+  <div class="logo">
+    <div class="logo-f"><span style="font-size:22px">⚖️</span><div><div class="logo-t">LexGsu</div><div class="logo-s">Hukuk Ofisi Platformu</div></div></div>
+    <div class="logo-m">⚖️</div>
+  </div>
+  <nav>
+    <button class="nb act" onclick="go('db',this)"><span class="ni">📊</span><span class="nl">Dashboard</span></button>
+    <button class="nb" onclick="go('crm',this)"><span class="ni">👥</span><span class="nl">CRM / Müvekkiller</span></button>
+    <button class="nb" onclick="go('dos',this)"><span class="ni">📁</span><span class="nl">Tüm Dosyalar</span></button>
+  </nav>
+  <button class="tgl" onclick="toggleSide()">◀</button>
+</div>
+<div id="main">
+  <header>
+    <div class="htitle" id="ptit">Dashboard</div>
+    <div class="hright" style="display:flex;gap:10px;align-items:center">
+      <div class="cdot" id="cdot"></div>
+      <span class="ctxt" id="ctxt">Yükleniyor...</span>
+      <div class="av">A</div>
+    </div>
+  </header>
+  <main id="content"><div class="spin"><div class="sp"></div><div style="color:var(--m);font-size:14px">Veriler yükleniyor...</div></div></main>
+</div>
+<script>
+// ── SUPABASE BAĞLANTISI ──────────────────────────────────────
+const SB_URL = "https://juhbjhnxzxulkzzijulm.supabase.co";
+const SB_KEY = "sb_publishable_xBidkDqXDKvQdvmA7DBQeQ_pq6_3OFY";
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ── VERİ ─────────────────────────────────────────────────────
+let DB = { muvekkiller:[], dosyalar:[] };
+let page = 'db';
+
+const YARGI = ["Ceza","Hukuk","İcra","İdari Yargı","Satış Memurluğu","Arabuluculuk","CBS","Tazminat Komisyonu Başkanlığı"];
+const TARAF = {"Ceza":["Sanık","Mağdur"],"Hukuk":["Davacı","Davalı"],"İcra":["Alacaklı","Borçlu"],"İdari Yargı":["Davacı","Davalı"],"Satış Memurluğu":["Alacaklı","Borçlu"],"Arabuluculuk":["Başvurucu","Karşı Taraf"],"CBS":["Şikayetçi","Şüpheli"],"Tazminat Komisyonu Başkanlığı":["Başvurucu","Karşı Taraf"]};
+
+// ── API ───────────────────────────────────────────────────────
+async function loadData(){
+  try{
+    const [mr,dr]=await Promise.all([
+      sb.from('muvekkiller').select('*').order('created_at'),
+      sb.from('dosyalar').select('*').order('created_at')
+    ]);
+    if(mr.error||dr.error) throw new Error();
+    DB.muvekkiller=mr.data||[];
+    DB.dosyalar=dr.data||[];
+    document.getElementById('cdot').className='cdot';
+    document.getElementById('ctxt').textContent='Supabase bağlı ✓';
+    render();
+  }catch(e){
+    document.getElementById('cdot').className='cdot err';
+    document.getElementById('ctxt').textContent='Bağlantı hatası';
+    render();
+  }
+}
+
+async function dbInsert(table,row){
+  showToast('💾 Kaydediliyor...');
+  const {data,error}=await sb.from(table).insert(row).select().single();
+  hideToast();
+  return data;
+}
+
+async function dbUpdate(table,id,row){
+  showToast('💾 Güncelleniyor...');
+  await sb.from(table).update(row).eq('id',id);
+  hideToast();
+}
+
+async function dbDelete(table,id){
+  showToast('🗑️ Siliniyor...');
+  await sb.from(table).delete().eq('id',id);
+  hideToast();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';}
+function hideToast(){setTimeout(()=>document.getElementById('toast').style.display='none',1000);}
+
+// ── NAV ───────────────────────────────────────────────────────
+const TITLES={db:'Dashboard',crm:'CRM / Müvekkiller',dos:'Tüm Dosyalar'};
+function go(p,btn){
+  page=p;
+  document.getElementById('ptit').textContent=TITLES[p];
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('act'));
+  if(btn)btn.classList.add('act');
+  render();
+}
+function toggleSide(){
+  const s=document.getElementById('sidebar');
+  s.classList.toggle('col');
+  document.querySelector('.tgl').textContent=s.classList.contains('col')?'▶':'◀';
+}
+function render(){
+  const c=document.getElementById('content');
+  if(page==='db')c.innerHTML=renderDB();
+  else if(page==='crm')c.innerHTML=renderCRM();
+  else if(page==='dos')c.innerHTML=renderDos();
+}
+
+// ── YARDIMCILAR ───────────────────────────────────────────────
+const tag=(t,bg='#eef2ff',c='#4f46e5')=>`<span class="tag" style="background:${bg};color:${c}">${t}</span>`;
+const isTaraf=k=>["Davacı","Alacaklı","Şikayetçi","Başvurucu"].includes(k);
+const getMuv=id=>DB.muvekkiller.find(m=>m.id==id);
+function nextGSU(){
+  const nums=DB.dosyalar.map(d=>parseInt((d.gsu_no||'GSU-0').split('-')[1])||0);
+  return `GSU-${(nums.length?Math.max(...nums):0)+1}`;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+function renderDB(){
+  const aktif=DB.dosyalar.filter(d=>d.durum==='Aktif').length;
+  const topM=DB.dosyalar.reduce((a,d)=>a+(d.masraflar||[]).reduce((x,m)=>x+(Number(m.tutar)||0),0),0);
+  const topD=DB.dosyalar.reduce((a,d)=>a+(d.durusmalar||[]).length,0);
+  const yd=DB.dosyalar.reduce((a,d)=>{a[d.yargi_turu]=(a[d.yargi_turu]||0)+1;return a;},{});
+  const rows=DB.dosyalar.slice(-5).reverse().map(d=>{
+    const mv=getMuv(d.musvekkil_id);
+    return `<tr><td>${tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')}</td><td><strong>${d.baslik}</strong><br><small style="color:var(--m)">${mv?.ad||'—'}</small></td><td>${tag(d.yargi_turu,'#e0eaf0','#2e5b66')}</td><td>${tag(d.durum,d.durum==='Aktif'?'#e0f0e8':'#fef3e0',d.durum==='Aktif'?'#2e5b66':'#c9963a')}</td></tr>`;
+  }).join('');
+  const yrows=Object.entries(yd).map(([k,v])=>
+    `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span>${k}</span><strong>${v}</strong></div>
+    <div style="background:#eee;border-radius:6px;height:7px"><div style="width:${DB.dosyalar.length?(v/DB.dosyalar.length*100):0}%;background:var(--a);height:7px;border-radius:6px"></div></div></div>`
+  ).join('');
+  return `<div class="sgrid">
+    <div class="sc" style="background:#2e5b66"><div class="si">📁</div><div class="sv">${aktif}</div><div class="sl">Aktif Dosya</div></div>
+    <div class="sc" style="background:#ce733b"><div class="si">👥</div><div class="sv">${DB.muvekkiller.length}</div><div class="sl">Müvekkil</div></div>
+    <div class="sc" style="background:#2e2d2c"><div class="si">💸</div><div class="sv">₺${topM.toLocaleString('tr-TR')}</div><div class="sl">Toplam Masraf</div></div>
+    <div class="sc" style="background:#8e9c9c"><div class="si">📅</div><div class="sv">${topD}</div><div class="sl">Duruşma</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card"><h3 style="color:var(--p);margin-bottom:14px">Son Dosyalar</h3><table>${rows||'<tr><td colspan="4" style="text-align:center;color:var(--m)">Henüz dosya yok</td></tr>'}</table></div>
+    <div class="card"><h3 style="color:var(--p);margin-bottom:14px">Yargı Türü Dağılımı</h3>${yrows||'<div style="color:var(--m);font-size:13px">Henüz dosya yok</div>'}</div>
+  </div>`;
+}
+
+// ── CRM ───────────────────────────────────────────────────────
+function renderCRM(){
+  const cards=DB.muvekkiller.map(mv=>{
+    const mds=DB.dosyalar.filter(d=>d.musvekkil_id==mv.id);
+    const tm=mds.reduce((a,d)=>a+(d.masraflar||[]).reduce((x,m)=>x+(Number(m.tutar)||0),0),0);
+    const ys=mds.reduce((a,d)=>{a[d.yargi_turu]=(a[d.yargi_turu]||0)+1;return a;},{});
+    const ytags=Object.entries(ys).map(([k,v])=>tag(`${k}: ${v}`,'#e0eaf0','#2e5b66')).join(' ');
+    const drows=mds.map(d=>`
+      <div class="ds" onclick="openDetay(${d.id})">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+          <div>${tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')} <strong style="font-size:13px;margin-left:6px">${d.esas_no||''}</strong> <span style="font-size:13px">${d.baslik}</span></div>
+          <div style="display:flex;gap:5px">${tag(d.yargi_turu,'#e0eaf0','#2e5b66')} ${tag(d.taraf_konumu,isTaraf(d.taraf_konumu)?'#e0f0e8':'#fde8dc',isTaraf(d.taraf_konumu)?'#2e5b66':'#ce733b')}</div>
+        </div>
+        ${d.mahkeme?`<div style="font-size:11px;color:var(--m);margin-top:4px">${d.mahkeme}${d.acilis?' · '+d.acilis:''}</div>`:''}
+      </div>`).join('');
+    return `<div class="mc-card">
+      <div class="mc-top ${mv.durum==='Aktif'?'':'pas'}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div style="font-weight:800;font-size:16px">${mv.ad}</div><div style="font-size:12px;color:var(--m);margin-top:2px">${mv.tip||''}${mv.sehir?' · '+mv.sehir:''}</div></div>
+          ${tag(mv.durum,mv.durum==='Aktif'?'#e0f0e8':'#f0f0f0',mv.durum==='Aktif'?'#2e5b66':'#888')}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px">
+          <div style="font-size:12px">📧 ${mv.email||'—'}</div>
+          <div style="font-size:12px">📞 ${mv.tel||'—'}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--p)">📁 ${mds.length} Dosya</div>
+          <div style="font-size:13px;font-weight:700;color:var(--a)">💸 ₺${tm.toLocaleString('tr-TR')}</div>
+        </div>
+        ${ytags?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px">${ytags}</div>`:''}
+      </div>
+      <div class="mc-foot">
+        <button class="bs" style="background:#dce8ec;color:var(--p)" onclick="toggleDos(${mv.id})">▼ Dosyalar</button>
+        <button class="bs" style="background:rgba(206,115,59,.2);color:var(--a)" onclick="openDosForm(${mv.id})">+ Dosya</button>
+        <button class="bs" style="background:#e0f0e8;color:var(--p)" onclick="openRapor(${mv.id})">📊 Rapor</button>
+        <button class="bs" style="background:#eef2ff;color:#4f46e5" onclick="openMuvForm(${mv.id})">✏️</button>
+        <button class="bs" style="background:#fde8dc;color:var(--a)" onclick="delMuv(${mv.id})">🗑️</button>
+      </div>
+      <div id="md-${mv.id}" style="padding:0 12px 12px;display:none">${drows||'<div style="color:var(--m);font-size:13px;padding:10px 0;font-style:italic">Dosya yok.</div>'}</div>
+    </div>`;
+  }).join('');
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h2 style="color:var(--p)">CRM – Müvekkil Yönetimi</h2>
+    <button class="btn bp" onclick="openMuvForm()">+ Yeni Müvekkil</button>
+  </div>
+  <input placeholder="🔍 Müvekkil ara..." oninput="filterMuv(this.value)" style="width:320px;padding:9px 12px;border-radius:8px;border:1.5px solid var(--b);font-size:14px;outline:none;margin-bottom:20px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px">${cards||'<div style="color:var(--m)">Henüz müvekkil eklenmemiş.</div>'}</div>
+  ${muvModal()}${dosFormModal()}${detayModal()}${raporModal()}`;
+}
+
+function filterMuv(q){document.querySelectorAll('.mc-card').forEach(c=>{const ad=c.querySelector('[style*="font-weight:800"]')?.textContent?.toLowerCase()||'';c.style.display=ad.includes(q.toLowerCase())?'':'none';});}
+function toggleDos(id){const el=document.getElementById('md-'+id);el.style.display=el.style.display==='none'?'block':'none';}
+
+// ── MÜVEKKİL FORM ────────────────────────────────────────────
+function muvModal(){
+  return `<div class="mo" id="mm" style="display:none" onclick="if(event.target===this)closeM('mm')">
+  <div class="md"><div class="mh"><span class="mt" id="mm-t">Yeni Müvekkil</span><button class="mc" onclick="closeM('mm')">×</button></div>
+  <input type="hidden" id="mm-id"/>
+  <div class="g2">
+    <div class="fi" style="grid-column:1/-1"><label>Ad / Firma</label><input id="mm-ad"/></div>
+    <div class="fi"><label>E-posta</label><input id="mm-em" type="email"/></div>
+    <div class="fi"><label>Telefon</label><input id="mm-tel"/></div>
+    <div class="fi"><label>Şehir</label><input id="mm-seh"/></div>
+    <div class="fi"><label>Tür</label><select id="mm-tip"><option>Bireysel</option><option>Kurumsal</option></select></div>
+  </div>
+  <button class="btn bp" style="width:100%" onclick="saveMuv()">Kaydet</button>
+  </div></div>`;
+}
+
+function openMuvForm(id){
+  document.getElementById('mm-id').value=id||'';
+  document.getElementById('mm-t').textContent=id?'Müvekkil Düzenle':'Yeni Müvekkil';
+  if(id){const m=getMuv(id);document.getElementById('mm-ad').value=m.ad||'';document.getElementById('mm-em').value=m.email||'';document.getElementById('mm-tel').value=m.tel||'';document.getElementById('mm-seh').value=m.sehir||'';document.getElementById('mm-tip').value=m.tip||'Bireysel';}
+  else{['mm-ad','mm-em','mm-tel','mm-seh'].forEach(i=>document.getElementById(i).value='');document.getElementById('mm-tip').value='Bireysel';}
+  document.getElementById('mm').style.display='flex';
+}
+
+async function saveMuv(){
+  const id=document.getElementById('mm-id').value;
+  const row={ad:document.getElementById('mm-ad').value,email:document.getElementById('mm-em').value,tel:document.getElementById('mm-tel').value,sehir:document.getElementById('mm-seh').value,tip:document.getElementById('mm-tip').value,durum:'Aktif'};
+  if(id){await dbUpdate('muvekkiller',Number(id),row);const i=DB.muvekkiller.findIndex(m=>m.id==id);if(i>=0)DB.muvekkiller[i]={...DB.muvekkiller[i],...row};}
+  else{row.id=Date.now();const d=await dbInsert('muvekkiller',row);DB.muvekkiller.push(d||row);}
+  closeM('mm');render();
+}
+
+async function delMuv(id){
+  if(!confirm('Bu müvekkili silmek istediğinizden emin misiniz?'))return;
+  await dbDelete('muvekkiller',id);
+  DB.muvekkiller=DB.muvekkiller.filter(m=>m.id!=id);
+  render();
+}
+
+// ── DOSYA FORM ────────────────────────────────────────────────
+function dosFormModal(){
+  const yo=YARGI.map(y=>`<option>${y}</option>`).join('');
+  return `<div class="mo" id="dfm" style="display:none" onclick="if(event.target===this)closeM('dfm')">
+  <div class="md wide"><div class="mh"><span class="mt" id="dfm-t">Yeni Dosya</span><button class="mc" onclick="closeM('dfm')">×</button></div>
+  <input type="hidden" id="dfm-id"/><input type="hidden" id="dfm-mid"/>
+  <div class="g2">
+    <div class="fi"><label>Müvekkil</label><select id="dfm-muv">${DB.muvekkiller.map(m=>`<option value="${m.id}">${m.ad}</option>`).join('')}</select></div>
+    <div class="fi"><label>Esas No</label><input id="dfm-esas" placeholder="2024/1234"/></div>
+    <div class="fi" style="grid-column:1/-1"><label>Başlık</label><input id="dfm-bas"/></div>
+    <div class="fi"><label>Yargı Türü</label><select id="dfm-yargi" onchange="updTaraf()">${yo}</select></div>
+    <div class="fi"><label>Taraf Konumu</label><select id="dfm-taraf"></select></div>
+    <div class="fi"><label>Durum</label><select id="dfm-dur"><option>Aktif</option><option>Beklemede</option><option>Kapalı</option></select></div>
+    <div class="fi"><label>Mahkeme / Daire</label><input id="dfm-mah"/></div>
+    <div class="fi"><label>Açılış Tarihi</label><input id="dfm-acilis" type="date"/></div>
+    <div class="fi" style="grid-column:1/-1"><label>Notlar</label><textarea id="dfm-not" rows="2"></textarea></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+    <input type="checkbox" id="dfm-re" checked/>
+    <label for="dfm-re" style="font-size:13px;cursor:pointer">Müvekkil raporuna dahil et</label>
+  </div>
+  <button class="btn bp" style="width:100%" onclick="saveDos()">Kaydet</button>
+  </div></div>`;
+}
+
+function updTaraf(sel){
+  const y=document.getElementById('dfm-yargi')?.value;
+  const ts=TARAF[y]||['Taraf 1','Taraf 2'];
+  const el=document.getElementById('dfm-taraf');
+  if(!el)return;
+  el.innerHTML=ts.map(t=>`<option${sel===t?' selected':''}>${t}</option>`).join('');
+}
+
+function openDosForm(mid,did){
+  document.getElementById('dfm-id').value=did||'';
+  document.getElementById('dfm-mid').value=mid||'';
+  document.getElementById('dfm-t').textContent=did?'Dosya Düzenle':'Yeni Dosya';
+  const sel=document.getElementById('dfm-muv');
+  sel.innerHTML=DB.muvekkiller.map(m=>`<option value="${m.id}">${m.ad}</option>`).join('');
+  if(did){
+    const d=DB.dosyalar.find(x=>x.id==did);
+    sel.value=d.musvekkil_id;
+    document.getElementById('dfm-esas').value=d.esas_no||'';
+    document.getElementById('dfm-bas').value=d.baslik||'';
+    document.getElementById('dfm-yargi').value=d.yargi_turu||'Hukuk';
+    updTaraf(d.taraf_konumu);
+    document.getElementById('dfm-dur').value=d.durum||'Aktif';
+    document.getElementById('dfm-mah').value=d.mahkeme||'';
+    document.getElementById('dfm-acilis').value=d.acilis||'';
+    document.getElementById('dfm-not').value=d.notlar||'';
+    document.getElementById('dfm-re').checked=!!d.rapora_ekle;
+  }else{
+    if(mid)sel.value=mid;
+    ['dfm-esas','dfm-bas','dfm-mah','dfm-not'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('dfm-acilis').value='';
+    document.getElementById('dfm-yargi').value='Hukuk';
+    updTaraf();
+    document.getElementById('dfm-dur').value='Aktif';
+    document.getElementById('dfm-re').checked=true;
+  }
+  document.getElementById('dfm').style.display='flex';
+}
+
+async function saveDos(){
+  const eid=document.getElementById('dfm-id').value;
+  const row={
+    musvekkil_id:Number(document.getElementById('dfm-muv').value),
+    esas_no:document.getElementById('dfm-esas').value,
+    baslik:document.getElementById('dfm-bas').value,
+    yargi_turu:document.getElementById('dfm-yargi').value,
+    taraf_konumu:document.getElementById('dfm-taraf').value,
+    durum:document.getElementById('dfm-dur').value,
+    mahkeme:document.getElementById('dfm-mah').value,
+    acilis:document.getElementById('dfm-acilis').value||null,
+    notlar:document.getElementById('dfm-not').value,
+    rapora_ekle:document.getElementById('dfm-re').checked,
+  };
+  if(eid){
+    await dbUpdate('dosyalar',Number(eid),row);
+    const i=DB.dosyalar.findIndex(x=>x.id==eid);
+    if(i>=0)DB.dosyalar[i]={...DB.dosyalar[i],...row};
+  }else{
+    row.id=Date.now();row.gsu_no=nextGSU();row.durusmalar=[];row.masraflar=[];row.raporlar=[];
+    const d=await dbInsert('dosyalar',row);
+    DB.dosyalar.push(d||row);
+  }
+  closeM('dfm');render();
+}
+
+// ── DOSYA DETAY ───────────────────────────────────────────────
+let _did=null,_dtab='genel';
+
+function detayModal(){
+  return `<div class="mo" id="ddm" style="display:none" onclick="if(event.target===this)closeM('ddm')">
+  <div class="md wide">
+    <div class="mh"><span class="mt" id="ddm-t">Dosya</span><button class="mc" onclick="closeM('ddm')">×</button></div>
+    <div id="ddm-tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div class="tabs">
+      <button class="tb act" onclick="swTab('genel',this)">📋 Genel</button>
+      <button class="tb" onclick="swTab('dur',this)">📅 Duruşmalar</button>
+      <button class="tb" onclick="swTab('mas',this)">💸 Masraflar</button>
+      <button class="tb" onclick="swTab('rap',this)">📄 Raporlar</button>
+    </div>
+    <div id="ddm-c"></div>
+  </div></div>`;
+}
+
+function openDetay(id){
+  _did=id;_dtab='genel';
+  const d=DB.dosyalar.find(x=>x.id==id);
+  const mv=getMuv(d.musvekkil_id);
+  document.getElementById('ddm-t').textContent=`${d.gsu_no} · ${d.esas_no||''} – ${d.baslik}`;
+  document.getElementById('ddm-tags').innerHTML=
+    tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')+' '+
+    tag(d.yargi_turu,'#e0eaf0','#2e5b66')+' '+
+    tag(d.taraf_konumu,isTaraf(d.taraf_konumu)?'#e0f0e8':'#fde8dc',isTaraf(d.taraf_konumu)?'#2e5b66':'#ce733b')+' '+
+    tag(d.durum,'#fef3e0','#c9963a')+
+    (mv?` ${tag('👤 '+mv.ad,'var(--l)','var(--d)')}`:'');
+  document.querySelectorAll('#ddm .tb').forEach((b,i)=>b.classList.toggle('act',i===0));
+  renderTab();
+  document.getElementById('ddm').style.display='flex';
+}
+
+function swTab(t,btn){
+  _dtab=t;
+  document.querySelectorAll('#ddm .tb').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  renderTab();
+}
+
+function renderTab(){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  const el=document.getElementById('ddm-c');
+  if(_dtab==='genel')el.innerHTML=tabGenel(d);
+  else if(_dtab==='dur')el.innerHTML=tabDur(d);
+  else if(_dtab==='mas')el.innerHTML=tabMas(d);
+  else if(_dtab==='rap')el.innerHTML=tabRap(d);
+}
+
+function tabGenel(d){
+  const mv=getMuv(d.musvekkil_id);
+  const rows=[['Sistem No',d.gsu_no],['Esas No',d.esas_no],['Yargı Türü',d.yargi_turu],['Taraf',d.taraf_konumu],['Mahkeme',d.mahkeme],['Açılış',d.acilis],['Durum',d.durum],['Müvekkil',mv?.ad]];
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    ${rows.map(([k,v])=>`<div style="background:var(--l);border-radius:8px;padding:10px 14px"><div style="font-size:10px;font-weight:700;color:var(--m);text-transform:uppercase">${k}</div><div style="font-size:14px;font-weight:600;margin-top:3px">${v||'—'}</div></div>`).join('')}
+  </div>
+  ${d.notlar?`<div style="margin-top:12px;background:var(--l);border-radius:8px;padding:10px 14px"><div style="font-size:10px;font-weight:700;color:var(--m);text-transform:uppercase">Notlar</div><div style="font-size:13px;margin-top:4px">${d.notlar}</div></div>`:''}
+  <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+    <input type="checkbox" id="re-chk" ${d.rapora_ekle?'checked':''} onchange="updRE(this.checked)"/>
+    <label for="re-chk" style="font-size:13px;cursor:pointer">Müvekkil raporuna dahil et</label>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:8px">
+    <button class="btn bp" onclick="openDosForm(${d.musvekkil_id},${d.id});closeM('ddm')">✏️ Düzenle</button>
+    <button class="btn" style="background:#fde8dc;color:var(--a)" onclick="delDos(${d.id})">🗑️ Sil</button>
+  </div>`;
+}
+
+async function updRE(v){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  d.rapora_ekle=v;
+  await dbUpdate('dosyalar',d.id,{rapora_ekle:v});
+}
+
+async function delDos(id){
+  if(!confirm('Bu dosyayı silmek istediğinizden emin misiniz?'))return;
+  await dbDelete('dosyalar',id);
+  DB.dosyalar=DB.dosyalar.filter(x=>x.id!=id);
+  closeM('ddm');render();
+}
+
+// ── DURUŞMALAR ────────────────────────────────────────────────
+function tabDur(d){
+  const list=d.durusmalar||[];
+  const rows=list.map(dr=>`
+    <div style="background:var(--l);border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:600;font-size:13px">${dr.tarih||''} ${dr.saat?'· '+dr.saat:''}</div><div style="font-size:12px;color:var(--m)">${dr.aciklama||''}</div></div>
+      <button class="bs" style="background:#fde8dc;color:var(--a)" onclick="delDur(${dr.id})">Sil</button>
+    </div>`).join('');
+  return `<div style="font-weight:700;color:var(--p);margin-bottom:10px">📅 Duruşmalar (${list.length})</div>
+  ${rows||'<div style="color:var(--m);font-size:13px;font-style:italic;margin-bottom:12px">Duruşma eklenmemiş.</div>'}
+  <div style="background:var(--l);border-radius:10px;padding:14px;margin-top:10px">
+    <div class="g2" style="margin-bottom:10px">
+      <div class="fi"><label>Tarih</label><input type="date" id="dr-t"/></div>
+      <div class="fi"><label>Saat</label><input type="time" id="dr-s"/></div>
+    </div>
+    <div class="fi"><label>Açıklama</label><input id="dr-a" placeholder="1. Duruşma..."/></div>
+    <button class="btn bp" onclick="addDur()">+ Ekle</button>
+  </div>`;
+}
+
+async function addDur(){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  const nr={id:Date.now(),tarih:document.getElementById('dr-t').value,saat:document.getElementById('dr-s').value,aciklama:document.getElementById('dr-a').value};
+  d.durusmalar=[...(d.durusmalar||[]),nr];
+  await dbUpdate('dosyalar',d.id,{durusmalar:d.durusmalar});
+  renderTab();
+}
+
+async function delDur(rid){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  d.durusmalar=(d.durusmalar||[]).filter(x=>x.id!=rid);
+  await dbUpdate('dosyalar',d.id,{durusmalar:d.durusmalar});
+  renderTab();
+}
+
+// ── MASRAFLAR ─────────────────────────────────────────────────
+function tabMas(d){
+  const list=d.masraflar||[];
+  const top=list.reduce((a,m)=>a+(Number(m.tutar)||0),0);
+  const rows=list.map(m=>`
+    <div style="background:var(--l);border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+      <div><div style="font-weight:600;font-size:13px">${m.aciklama} · <span style="color:var(--a)">₺${Number(m.tutar).toLocaleString('tr-TR')}</span></div>
+      <div style="font-size:12px;color:var(--m)">${m.tarih||''}${m.belge_ad?' · 📎 '+m.belge_ad:''}</div></div>
+      <button class="bs" style="background:#fde8dc;color:var(--a)" onclick="delMas(${m.id})">Sil</button>
+    </div>`).join('');
+  return `<div style="font-weight:700;color:var(--p);margin-bottom:10px">💸 Masraflar · <span style="color:var(--a)">₺${top.toLocaleString('tr-TR')}</span></div>
+  ${rows||'<div style="color:var(--m);font-size:13px;font-style:italic;margin-bottom:12px">Masraf eklenmemiş.</div>'}
+  <div style="background:var(--l);border-radius:10px;padding:14px;margin-top:10px">
+    <div class="g2" style="margin-bottom:10px">
+      <div class="fi"><label>Açıklama</label><input id="ms-a" placeholder="Tebligat, Harç..."/></div>
+      <div class="fi"><label>Tutar (₺)</label><input type="number" id="ms-t"/></div>
+      <div class="fi"><label>Tarih</label><input type="date" id="ms-d"/></div>
+      <div class="fi"><label>Belge</label><input type="file" id="ms-f" accept="image/*,application/pdf" style="font-size:12px"/></div>
+    </div>
+    <button class="btn bp" onclick="addMas()">+ Ekle</button>
+  </div>`;
+}
+
+async function addMas(){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  const fi=document.getElementById('ms-f');
+  let belge_ad='',belge_data='';
+  if(fi.files[0]){
+    const f=fi.files[0];belge_ad=f.name;
+    belge_data=await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(f);});
+  }
+  const nr={id:Date.now(),aciklama:document.getElementById('ms-a').value,tutar:document.getElementById('ms-t').value,tarih:document.getElementById('ms-d').value,belge_ad,belge_data};
+  d.masraflar=[...(d.masraflar||[]),nr];
+  await dbUpdate('dosyalar',d.id,{masraflar:d.masraflar});
+  renderTab();
+}
+
+async function delMas(rid){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  d.masraflar=(d.masraflar||[]).filter(x=>x.id!=rid);
+  await dbUpdate('dosyalar',d.id,{masraflar:d.masraflar});
+  renderTab();
+}
+
+// ── RAPORLAR ──────────────────────────────────────────────────
+function tabRap(d){
+  const list=d.raporlar||[];
+  const rows=list.map(r=>`
+    <div style="background:var(--l);border-radius:10px;padding:10px 14px;margin-bottom:8px;border:1px solid var(--b)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="font-weight:700;font-size:13px">${r.baslik}</div>
+        <div style="display:flex;gap:6px">
+          <button class="bs" style="background:#e0eaf0;color:var(--p)" onclick="editRap(${r.id})">✏️</button>
+          <button class="bs" style="background:#fde8dc;color:var(--a)" onclick="delRap(${r.id})">Sil</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--m);margin:3px 0 6px">${r.tarih||''}${r.guncelleme?' · 🔄 '+r.guncelleme:''}</div>
+      <div id="rv-${r.id}" style="font-size:13px;white-space:pre-wrap;line-height:1.6">${r.icerik||''}</div>
+      <div id="re-${r.id}" style="display:none">
+        <input id="rb-${r.id}" value="${(r.baslik||'').replace(/"/g,'&quot;')}" style="width:100%;padding:8px;border:1.5px solid var(--b);border-radius:8px;margin-bottom:8px;font-size:13px"/>
+        <textarea id="ri-${r.id}" style="width:100%;padding:8px;border:1.5px solid var(--b);border-radius:8px;height:80px;font-size:13px;resize:vertical">${r.icerik||''}</textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn bp" onclick="saveRapEdit(${r.id})">💾 Güncelle</button>
+          <button class="btn bg" onclick="cancelRapEdit(${r.id})">İptal</button>
+        </div>
+      </div>
+    </div>`).join('');
+  return `<div style="font-weight:700;color:var(--p);margin-bottom:10px">📋 Raporlar (${list.length})</div>
+  ${rows||'<div style="color:var(--m);font-size:13px;font-style:italic;margin-bottom:12px">Rapor eklenmemiş.</div>'}
+  <div style="background:var(--l);border-radius:10px;padding:14px;margin-top:10px;border:1px dashed var(--b)">
+    <div class="fi"><label>Başlık</label><input id="nr-b"/></div>
+    <div class="fi"><label>İçerik</label><textarea id="nr-i" rows="3"></textarea></div>
+    <button class="btn bp" onclick="addRap()">+ Ekle</button>
+  </div>`;
+}
+
+function editRap(id){document.getElementById('rv-'+id).style.display='none';document.getElementById('re-'+id).style.display='block';}
+function cancelRapEdit(id){document.getElementById('rv-'+id).style.display='block';document.getElementById('re-'+id).style.display='none';}
+
+async function saveRapEdit(rid){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  d.raporlar=(d.raporlar||[]).map(r=>r.id==rid?{...r,baslik:document.getElementById('rb-'+rid).value,icerik:document.getElementById('ri-'+rid).value,guncelleme:new Date().toISOString().slice(0,10)}:r);
+  await dbUpdate('dosyalar',d.id,{raporlar:d.raporlar});
+  renderTab();
+}
+
+async function addRap(){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  const nr={id:Date.now(),baslik:document.getElementById('nr-b').value,icerik:document.getElementById('nr-i').value,tarih:new Date().toISOString().slice(0,10)};
+  d.raporlar=[...(d.raporlar||[]),nr];
+  await dbUpdate('dosyalar',d.id,{raporlar:d.raporlar});
+  renderTab();
+}
+
+async function delRap(rid){
+  const d=DB.dosyalar.find(x=>x.id==_did);
+  d.raporlar=(d.raporlar||[]).filter(x=>x.id!=rid);
+  await dbUpdate('dosyalar',d.id,{raporlar:d.raporlar});
+  renderTab();
+}
+
+// ── MÜVEKKİL RAPORU ──────────────────────────────────────────
+let _rmid=null,_rtab='mas',_rsel=[];
+
+function raporModal(){
+  return `<div class="mo" id="rm" style="display:none" onclick="if(event.target===this)closeM('rm')">
+  <div class="md wide">
+    <div class="mh"><span class="mt" id="rm-t">Rapor</span><button class="mc" onclick="closeM('rm')">×</button></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn" id="rt-mas" onclick="swRtab('mas')" style="background:var(--p);color:#fff">💸 Masraf</button>
+      <button class="btn" id="rt-rap" onclick="swRtab('rap')" style="background:#e0e6ed;color:var(--d)">📋 Raporlar</button>
+    </div>
+    <div id="rm-dos" style="margin-bottom:14px"></div>
+    <div id="rm-prev" style="background:var(--l);border-radius:12px;padding:18px;max-height:280px;overflow-y:auto;margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn ba" style="flex:1" onclick="rPDF()">📄 PDF Önizle</button>
+      <button class="btn bp" style="flex:1" onclick="rExcel()">📊 Excel Görüntüle</button>
+    </div>
+  </div></div>`;
+}
+
+function openRapor(mid){
+  _rmid=mid;_rtab='mas';
+  const mv=getMuv(mid);
+  document.getElementById('rm-t').textContent=`📊 ${mv.ad} – Rapor`;
+  const dos=DB.dosyalar.filter(d=>d.musvekkil_id==mid);
+  _rsel=dos.filter(d=>d.rapora_ekle).map(d=>d.id);
+  renderRDos(dos);renderRPrev();
+  document.getElementById('rm').style.display='flex';
+}
+
+function renderRDos(dos){
+  const el=document.getElementById('rm-dos');if(!el)return;
+  el.innerHTML=(dos||DB.dosyalar.filter(d=>d.musvekkil_id==_rmid)).map(d=>`
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${_rsel.includes(d.id)?'rgba(46,91,102,.08)':'var(--l)'};border-radius:8px;margin-bottom:6px;cursor:pointer;border:1.5px solid ${_rsel.includes(d.id)?'var(--p)':'var(--b)'}">
+      <input type="checkbox" ${_rsel.includes(d.id)?'checked':''} onchange="togRsel(${d.id},this.checked)"/>
+      ${tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')}
+      <div style="flex:1"><span style="font-weight:600;font-size:13px">${d.esas_no||''} – ${d.baslik}</span></div>
+      ${tag(d.durum,'#fef3e0','#c9963a')}
+    </label>`).join('');
+}
+
+function togRsel(id,c){if(c)_rsel.push(id);else _rsel=_rsel.filter(x=>x!=id);renderRDos();renderRPrev();}
+
+function swRtab(t){
+  _rtab=t;
+  document.getElementById('rt-mas').style.cssText=t==='mas'?'background:var(--p);color:#fff':'background:#e0e6ed;color:var(--d)';
+  document.getElementById('rt-rap').style.cssText=t==='rap'?'background:var(--p);color:#fff':'background:#e0e6ed;color:var(--d)';
+  renderRPrev();
+}
+
+function renderRPrev(){
+  const sel=DB.dosyalar.filter(d=>_rsel.includes(d.id));
+  const el=document.getElementById('rm-prev');if(!el)return;
+  if(_rtab==='mas'){
+    const gt=sel.reduce((a,d)=>a+(d.masraflar||[]).reduce((x,m)=>x+(Number(m.tutar)||0),0),0);
+    el.innerHTML=sel.map(d=>{
+      const top=(d.masraflar||[]).reduce((a,m)=>a+(Number(m.tutar)||0),0);
+      return `<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><strong style="color:var(--p)">${tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')} ${d.baslik}</strong><span style="font-weight:700;color:var(--a)">₺${top.toLocaleString('tr-TR')}</span></div>
+        ${(d.masraflar||[]).length===0?'<div style="color:var(--m);font-size:12px">Masraf yok.</div>':
+          d.masraflar.map(m=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b);font-size:13px"><span>${m.tarih||''} – ${m.aciklama}</span><span style="font-weight:600">₺${Number(m.tutar).toLocaleString('tr-TR')}</span></div>`).join('')}
+      </div>`;
+    }).join('')+(sel.length?`<div style="text-align:right;font-weight:800;font-size:16px;color:var(--a)">Genel Toplam: ₺${gt.toLocaleString('tr-TR')}</div>`:'');
+  }else{
+    el.innerHTML=sel.map(d=>`
+      <div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px">
+        <strong style="color:var(--p);display:block;margin-bottom:8px">${tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')} ${d.baslik}</strong>
+        ${(d.raporlar||[]).length===0?'<div style="color:var(--m);font-size:12px">Rapor girilmemiş.</div>':
+          d.raporlar.map(r=>`<div style="border-left:3px solid var(--a);padding-left:12px;margin-bottom:8px"><div style="font-weight:600;font-size:13px">${r.baslik} <span style="font-weight:400;color:var(--m);font-size:11px">${r.tarih||''}</span></div><div style="font-size:13px;margin-top:4px;white-space:pre-wrap">${r.icerik||''}</div></div>`).join('')}
+      </div>`).join('');
+  }
+}
+
+const CSS=`body{font-family:Arial,sans-serif;margin:0;color:#2e2d2c}h1{color:#2e5b66;border-bottom:3px solid #ce733b;padding-bottom:8px;font-size:20px}h2{color:#2e5b66;margin-top:22px;font-size:14px;border-left:4px solid #ce733b;padding-left:8px}table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}th{background:#2e5b66;color:#fff;padding:7px 10px;text-align:left}td{padding:6px 10px;border-bottom:1px solid #e0e6ed}tr:nth-child(even)td{background:#f8f3f9}.total{text-align:right;font-weight:bold;color:#ce733b;padding:8px 0}.gsu{background:rgba(46,91,102,.13);color:#2e5b66;border-radius:4px;padding:1px 6px;font-weight:bold;font-size:11px}`;
+
+function rPDF(){
+  const mv=getMuv(_rmid);
+  const sel=DB.dosyalar.filter(d=>_rsel.includes(d.id));
+  let body=`<h1>${mv.ad} – ${_rtab==='mas'?'Masraf Raporu':'Dosya Raporları'}</h1><p style="color:#8e9c9c;font-size:11px">Tarih: ${new Date().toLocaleDateString('tr-TR')} · LexGsu</p>`;
+  sel.forEach(d=>{
+    const top=(d.masraflar||[]).reduce((a,m)=>a+(Number(m.tutar)||0),0);
+    body+=`<h2><span class="gsu">${d.gsu_no}</span> ${d.esas_no||''} – ${d.baslik}</h2>`;
+    if(_rtab==='mas'){
+      const mH=(d.masraflar||[]).length===0?'<tr><td colspan="3" style="color:#999;font-style:italic">Masraf yok.</td></tr>':d.masraflar.map(m=>`<tr><td>${m.tarih||''}</td><td>${m.aciklama}</td><td>₺${Number(m.tutar).toLocaleString('tr-TR')}</td></tr>`).join('');
+      body+=`<table><tr><th>Tarih</th><th>Açıklama</th><th>Tutar</th></tr>${mH}</table><p class="total">Toplam: ₺${top.toLocaleString('tr-TR')}</p>`;
+    }else{
+      if(!(d.raporlar||[]).length)body+='<p style="color:#999;font-style:italic">Rapor girilmemiş.</p>';
+      else d.raporlar.forEach(r=>{body+=`<div style="border-left:3px solid #ce733b;padding-left:12px;margin-bottom:10px"><strong>${r.baslik}</strong> <span style="color:#999;font-size:11px">${r.tarih||''}</span><p style="font-size:13px;margin:6px 0">${(r.icerik||'').replace(/\n/g,'<br/>')}</p></div>`;});
+    }
+  });
+  showPrev(`<style>${CSS}</style>${body}`,`${mv.ad} Raporu`);
+}
+
+function rExcel(){
+  const mv=getMuv(_rmid);
+  const sel=DB.dosyalar.filter(d=>_rsel.includes(d.id));
+  let rows,name;
+  if(_rtab==='mas'){
+    rows=[["GSU No","Esas No","Başlık","Yargı","Tarih","Açıklama","Tutar (TL)"]];
+    sel.forEach(d=>{if(!(d.masraflar||[]).length)rows.push([d.gsu_no,d.esas_no||'',d.baslik,d.yargi_turu,'—','—','0']);else d.masraflar.forEach(m=>rows.push([d.gsu_no,d.esas_no||'',d.baslik,d.yargi_turu,m.tarih||'',m.aciklama||'',m.tutar||0]));});
+    name=`${mv.ad}_Masraf`;
+  }else{
+    rows=[["GSU No","Esas No","Başlık","Yargı","Rapor Başlığı","Tarih","İçerik"]];
+    sel.forEach(d=>{if(!(d.raporlar||[]).length)rows.push([d.gsu_no,d.esas_no||'',d.baslik,d.yargi_turu,'—','—','—']);else d.raporlar.forEach(r=>rows.push([d.gsu_no,d.esas_no||'',d.baslik,d.yargi_turu,r.baslik||'',r.tarih||'',r.icerik||'']));});
+    name=`${mv.ad}_Raporlar`;
+  }
+  let csv='';rows.forEach(r=>{csv+=r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join('\t')+'\n';});
+  showExcel(csv,name);
+}
+
+// ── TÜM DOSYALAR ─────────────────────────────────────────────
+let _filtre='Tümü';
+function renderDos(){
+  const fils=['Tümü','Aktif','Beklemede','Kapalı',...YARGI];
+  const filtered=_filtre==='Tümü'?DB.dosyalar:DB.dosyalar.filter(d=>d.durum===_filtre||d.yargi_turu===_filtre);
+  const fbtns=fils.map(f=>`<button onclick="setFiltre('${f}')" style="padding:5px 12px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:${_filtre===f?'var(--p)':'#e0e6ed'};color:${_filtre===f?'#fff':'var(--d)'}">${f}</button>`).join('');
+  const rows=filtered.map((d,i)=>{
+    const mv=getMuv(d.musvekkil_id);
+    const ms=(d.masraflar||[]).reduce((a,m)=>a+(Number(m.tutar)||0),0);
+    return `<tr style="background:${i%2===0?'#fff':'var(--l)'}">
+      <td>${tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')}</td>
+      <td><strong style="color:var(--p)">${d.esas_no||'—'}</strong></td>
+      <td>${d.baslik}</td>
+      <td><span style="font-size:12px;color:var(--m)">${mv?.ad||'—'}</span></td>
+      <td>${tag(d.yargi_turu,'#e0eaf0','#2e5b66')}</td>
+      <td>${tag(d.taraf_konumu,isTaraf(d.taraf_konumu)?'#e0f0e8':'#fde8dc',isTaraf(d.taraf_konumu)?'#2e5b66':'#ce733b')}</td>
+      <td>${tag(d.durum,d.durum==='Aktif'?'#e0f0e8':d.durum==='Beklemede'?'#fef3e0':'#f0f0f0',d.durum==='Aktif'?'#2e5b66':d.durum==='Beklemede'?'#c9963a':'#888')}</td>
+      <td>${ms>0?`<span style="color:var(--a);font-weight:700">₺${ms.toLocaleString('tr-TR')}</span>`:'—'}</td>
+      <td>
+        <button class="bs" style="background:#dce8ec;color:var(--p)" onclick="openDetay(${d.id})">Detay</button>
+        <button class="bs" style="background:#fde8dc;color:var(--a);margin-left:4px" onclick="delDos(${d.id})">Sil</button>
+      </td>
+    </tr>`;
+  }).join('');
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+    <h2 style="color:var(--p)">Tüm Dosyalar</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn ba" onclick="openToplu()">📥 Toplu Dışa Aktar</button>
+      <button class="btn bp" onclick="openDosForm()">+ Yeni Dosya</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${fbtns}</div>
+  <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(46,91,102,.08);overflow-x:auto">
+    <table><thead><tr>${["GSU No","Esas No","Başlık","Müvekkil","Yargı","Konum","Durum","Masraf","İşlem"].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${rows||'<tr><td colspan="9" style="text-align:center;color:var(--m);padding:30px">Dosya bulunamadı.</td></tr>'}</tbody></table>
+  </div>
+  ${dosFormModal()}${detayModal()}${topluModal()}`;
+}
+
+function setFiltre(f){_filtre=f;render();}
+
+// ── TOPLU EXPORT ─────────────────────────────────────────────
+let _tsel=[],_ttab='rap';
+function topluModal(){
+  return `<div class="mo" id="tm" style="display:none" onclick="if(event.target===this)closeM('tm')">
+  <div class="md wide">
+    <div class="mh"><span class="mt">📥 Toplu Dışa Aktarım</span><button class="mc" onclick="closeM('tm')">×</button></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn" id="tt-rap" onclick="swTtab('rap')" style="background:var(--p);color:#fff">📋 Raporlar</button>
+      <button class="btn" id="tt-mas" onclick="swTtab('mas')" style="background:#e0e6ed;color:var(--d)">💸 Masraflar</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="bs" style="background:rgba(46,91,102,.15);color:var(--p)" onclick="tSelAll()">Tümünü Seç</button>
+      <button class="bs" style="background:#eee;color:var(--m)" onclick="tSelNone()">Temizle</button>
+    </div>
+    <div id="tm-dos" style="max-height:260px;overflow-y:auto;margin-bottom:14px"></div>
+    <div id="tm-info" style="background:var(--l);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--m)"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn ba" style="flex:1" onclick="tPDF()">📄 PDF Önizle</button>
+      <button class="btn bp" style="flex:1" onclick="tExcel()">📊 Excel Görüntüle</button>
+    </div>
+  </div></div>`;
+}
+
+function openToplu(){
+  _tsel=DB.dosyalar.map(d=>d.id);_ttab='rap';
+  renderTDos();
+  document.getElementById('tm').style.display='flex';
+}
+function renderTDos(){
+  const el=document.getElementById('tm-dos');if(!el)return;
+  el.innerHTML=DB.dosyalar.map(d=>{
+    const mv=getMuv(d.musvekkil_id);
+    return `<label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${_tsel.includes(d.id)?'rgba(46,91,102,.08)':'var(--l)'};border-radius:8px;margin-bottom:6px;cursor:pointer;border:1.5px solid ${_tsel.includes(d.id)?'var(--p)':'var(--b)'}">
+      <input type="checkbox" ${_tsel.includes(d.id)?'checked':''} onchange="togT(${d.id},this.checked)"/>
+      ${tag(d.gsu_no,'rgba(46,91,102,.13)','#2e5b66')}
+      <div style="flex:1"><span style="font-weight:600;font-size:13px">${d.esas_no||''} – ${d.baslik}</span> <span style="font-size:12px;color:var(--m)">${mv?.ad||''}</span></div>
+    </label>`;
+  }).join('');
+  const info=document.getElementById('tm-info');
+  if(info)info.innerHTML=`<strong style="color:var(--d)">${_tsel.length}</strong> dosya seçili`;
+}
+function togT(id,c){if(c)_tsel.push(id);else _tsel=_tsel.filter(x=>x!=id);renderTDos();}
+function tSelAll(){_tsel=DB.dosyalar.map(d=>d.id);renderTDos();}
+function tSelNone(){_tsel=[];renderTDos();}
+function swTtab(t){
+  _ttab=t;
+  document.getElementById('tt-rap').style.cssText=t==='rap'?'background:var(--p);color:#fff':'background:#e0e6ed;color:var(--d)';
+  document.getElementById('tt-mas').style.cssText=t==='mas'?'background:var(--p);color:#fff':'background:#e0e6ed;color:var(--d)';
+}
+
+function tPDF(){
+  const sel=DB.dosyalar.filter(d=>_tsel.includes(d.id));
+  let body=`<h1>${_ttab==='mas'?'Toplu Masraf Raporu':'Toplu Dosya Raporları'}</h1><p style="color:#8e9c9c;font-size:11px">Tarih: ${new Date().toLocaleDateString('tr-TR')} · LexGsu</p>`;
+  sel.forEach(d=>{
+    const mv=getMuv(d.musvekkil_id);
+    const top=(d.masraflar||[]).reduce((a,m)=>a+(Number(m.tutar)||0),0);
+    body+=`<h2><span class="gsu">${d.gsu_no}</span> ${d.esas_no||''} – ${d.baslik}</h2>`;
+    if(_ttab==='mas'){
+      const mH=(d.masraflar||[]).length===0?'<tr><td colspan="3" style="color:#999;font-style:italic">Masraf yok.</td></tr>':d.masraflar.map(m=>`<tr><td>${m.tarih||''}</td><td>${m.aciklama}</td><td>₺${Number(m.tutar).toLocaleString('tr-TR')}</td></tr>`).join('');
+      body+=`<p style="font-size:12px;color:#555"><b>Müvekkil:</b> ${mv?.ad||'—'} · <b>Yargı:</b> ${d.yargi_turu}</p><table><tr><th>Tarih</th><th>Açıklama</th><th>Tutar</th></tr>${mH}</table><p class="total">Toplam: ₺${top.toLocaleString('tr-TR')}</p>`;
+    }else{
+      if(!(d.raporlar||[]).length)body+='<p style="color:#999;font-style:italic">Rapor girilmemiş.</p>';
+      else d.raporlar.forEach(r=>{body+=`<div style="border-left:3px solid #ce733b;padding-left:12px;margin-bottom:10px"><strong>${r.baslik}</strong> <span style="color:#999;font-size:11px">${r.tarih||''}</span><p style="font-size:13px;margin:6px 0">${(r.icerik||'').replace(/\n/g,'<br/>')}</p></div>`;});
+    }
+  });
+  showPrev(`<style>${CSS}</style>${body}`,_ttab==='mas'?'Toplu Masraf':'Toplu Rapor');
+}
+
+function tExcel(){
+  const sel=DB.dosyalar.filter(d=>_tsel.includes(d.id));
+  let rows,name;
+  if(_ttab==='mas'){
+    rows=[["GSU No","Esas No","Başlık","Müvekkil","Yargı","Tarih","Açıklama","Tutar (TL)"]];
+    sel.forEach(d=>{const mv=getMuv(d.musvekkil_id);if(!(d.masraflar||[]).length)rows.push([d.gsu_no,d.esas_no||'',d.baslik,mv?.ad||'',d.yargi_turu,'—','—','0']);else d.masraflar.forEach(m=>rows.push([d.gsu_no,d.esas_no||'',d.baslik,mv?.ad||'',d.yargi_turu,m.tarih||'',m.aciklama||'',m.tutar||0]));});
+    name='LexGsu_Masraflar';
+  }else{
+    rows=[["GSU No","Esas No","Başlık","Müvekkil","Yargı","Rapor Başlığı","Tarih","İçerik"]];
+    sel.forEach(d=>{const mv=getMuv(d.musvekkil_id);if(!(d.raporlar||[]).length)rows.push([d.gsu_no,d.esas_no||'',d.baslik,mv?.ad||'',d.yargi_turu,'—','—','—']);else d.raporlar.forEach(r=>rows.push([d.gsu_no,d.esas_no||'',d.baslik,mv?.ad||'',d.yargi_turu,r.baslik||'',r.tarih||'',r.icerik||'']));});
+    name='LexGsu_Raporlar';
+  }
+  let csv='';rows.forEach(r=>{csv+=r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join('\t')+'\n';});
+  showExcel(csv,name);
+}
+
+// ── ÖNIZLEME ─────────────────────────────────────────────────
+function showPrev(html,title){
+  document.getElementById('ptitle').textContent=title;
+  document.getElementById('pc').innerHTML=html;
+  document.getElementById('pov').classList.add('show');
+}
+function showExcel(csv,name){
+  document.getElementById('ptitle').textContent=name;
+  document.getElementById('pc').innerHTML='<p style="color:var(--m);font-size:13px;margin-bottom:10px">Tümünü seçip kopyalayın → Excel\'e yapıştırın (Ctrl+A → Ctrl+C)</p><textarea onclick="this.select()">'+csv+'</textarea>';
+  document.getElementById('pov').classList.add('show');
+}
+function closePrev(){document.getElementById('pov').classList.remove('show');}
+function closeM(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+
+window.onload=loadData;
+</script>
+</body>
+</html>
